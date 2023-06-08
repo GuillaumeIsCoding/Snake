@@ -23,6 +23,12 @@ class Application():
         "difficulty"    :    1,
         "score"         :    0, 
     }
+    # 
+    game ={
+        "pause"             :   False,
+        "first_object"      :   True,
+        "is_gui_running"    :   True
+    }
     #
     body_part = []
     # 
@@ -54,7 +60,7 @@ class Application():
         
         """
 
-        while self.is_gui_running != False:
+        while self.game["is_gui_running"] != False:
             #
             self.dT = self.clock.tick_busy_loop(9)/1000.0          # pour difficulter changer le busy loop
                                                                    # self.gameplay["difficulty"]
@@ -89,32 +95,42 @@ class Application():
 
             if self.event.type == KEYDOWN:
 
-                if self.event.key == K_w:
-                    # 
-                    self.gameplay["heading_x"], self.gameplay["heading_y"] = 0, -1
+                if self.game["pause"] == False:
+                
+                    if self.event.key == K_w:
+                        # 
+                        self.gameplay["heading_x"], self.gameplay["heading_y"] = 0, -1
 
-                if self.event.key == K_s:
-                    # 
-                    self.gameplay["heading_x"], self.gameplay["heading_y"] = 0, 1
+                    if self.event.key == K_s:
+                        # 
+                        self.gameplay["heading_x"], self.gameplay["heading_y"] = 0, 1
 
-                if self.event.key == K_a:
-                    # 
-                    self.gameplay["heading_x"], self.gameplay["heading_y"] = -1, 0
+                    if self.event.key == K_a:
+                        # 
+                        self.gameplay["heading_x"], self.gameplay["heading_y"] = -1, 0
 
-                if self.event.key == K_d:
-                    # 
-                    self.gameplay["heading_x"], self.gameplay["heading_y"] = 1, 0
+                    if self.event.key == K_d:
+                        # 
+                        self.gameplay["heading_x"], self.gameplay["heading_y"] = 1, 0
 
                 if self.event.key == K_SPACE:
-                    # This function rotate the object when "Space" key is pressed
-                    print("space")
+                    # lorsque la touche est cliqué met la partie sur pause 
+                    
+                    if self.game["pause"] == False:
+                        
+                        self.game["pause"] = True
+                    
+                    elif self.game["pause"] == True:
+
+                        self.game["pause"] = False
 
                 if self.event.key == K_ESCAPE:
                     # This function close the game when "Esc" key is pressed
-                    self.is_gui_running = False
+                    self.game["is_gui_running"] = False
             
-        
-        self.move_snake()        
+        if self.game["pause"]   == False:
+            #
+            self.move_snake()        
                 
             
             
@@ -206,12 +222,12 @@ class Application():
     def spawn(self) -> None:
         
         """
-        
+        Initialisation d'une nouvelle game
         """
         #
-        if self.first_object == True:
+        if self.game["first_object"] == True:
             #
-            self.first_object = False
+            self.game["first_object"] = False
             #
             ishead = True
             #
@@ -243,7 +259,7 @@ class Application():
     def random_spawn(self,min,max_1,max_2) -> tuple[int,int]:
         
         """
-        
+        Retourne un spawn aléatoire dépendament des paramètres utilisé lors de l'exécution de la fonction
         """
 
         n1 = randint(min,max_1)
@@ -254,77 +270,76 @@ class Application():
     def move_snake(self) -> None:
 
         """
-        
+        Déplacement du serpent 
         """
 
+        # nombre de partie que le serpent a
         indice = len(self.body_part) - 1 
 
+        # déplaçons le serpent de la fin au début
         while indice > 0:
-            
+            # prend la position avant de la partie [indice - 1] pour la donner a [indice]
             self.body_part[indice].x, self.body_part[indice].y = self.body_part[indice - 1].x, self.body_part[indice - 1].y
         
             indice = indice - 1
-                
+        # déplace la tete indépendament du reste du corps        
         self.body_part[0].x, self.body_part[0].y = self.body_part[0].x + 21 * self.gameplay["heading_x"], self.body_part[0].y + 21 * self.gameplay["heading_y"]
     
     def difficulty(self) -> None:
 
         """
-        
+        À un certain nombre de point la difficulté augmente
         """
         
         if self.gameplay["score"] % 100 == 0:
 
-            #
+            # augmentons la difficulté
             self.gameplay["difficulty"] = self.gameplay["difficulty"] + 0.05
 
     def score(self) -> None:
 
         """
-        
+        Suit en direct le score 
         """
         
-        self.gameplay["score"] = self.gameplay["score"] + 25
+        self.gameplay["score"] = self.gameplay["score"] + 50
 
     def colision_listener(self) -> None:
 
         """
-        
+        Verifie si toute les colisions que la tete fait sont conforme au jeu
         """
 
+        # lorsque la tete du serpent est sur la pomme 
         if (self.body_part[0].x >= self.apple[0].x and self.body_part[0].x  <= self.apple[0].x + 20) and (self.body_part[0].y >= self.apple[0].y and self.body_part[0].y <= self.apple[0].y + 20):
-
+            # detruire la pomme 
             for obj in self.apple:
-
+                # pop l'item dans la liste
                 self.apple.pop(self.apple.index(obj))
-                
+            # prenons le dernier index du corps du serpent
             prev = self.body_part[-1]
-
-            #
+            # spawn la pomme 
             apple_x, apple_y = self.random_spawn(0,29,39)
-            #
+            # ajoutons la pomme a la liste
             self.apple.append(Object(apple_x,apple_y,20,20))
-            #
+            # ajoutons une nouvelle partie au serpent
             self.body_part.append(Object(prev.x + 21 * self.gameplay["heading_x"], prev.y + 21 * self.gameplay["heading_y"], 20, 20))
-
+            # update le score
             self.score()
-
+            # ajoutons la difficulté
             self.difficulty()
-        
+        # lorsque la tete du serpent touche les bords du jeu
         if (self.body_part[0].x <= 0) or (self.body_part[0].x >= (self.width)/3 + (((self.width)/3)/20 + 1)) or (self.body_part[0].y <= 0) or (self.body_part[0].y >= 800 + ((800/20)+1)):
-
-            self.is_gui_running = False
+            
+            self.game["is_gui_running"] = False
 
             print("GAME OVER")
-        
+        # analysons laposition de chaque partie du corps du serpent
         for indice in range(1,len(self.body_part)):
-
-            """
-            
-            """
+            # lorsque la tete du serpent touche son corps
             if (self.body_part[0].x >= self.body_part[indice].x and self.body_part[0].x  <= self.body_part[indice].x + 20) and (self.body_part[0].y >= self.body_part[indice].y and self.body_part[0].y <= self.body_part[indice].y + 20):
                 
-                self.is_gui_running = False
+                self.game["is_gui_running"] = False
 
                 print("GAME OVER")
 
@@ -334,7 +349,7 @@ class Application():
     def direction(self) -> tuple[int,int]:
         
         """
-        
+        La direction initiale du serpent lorsque une game est lancée
         """
 
         d = {
@@ -343,5 +358,5 @@ class Application():
             "2" :  (1,0),
             "3" : (0,-1)
         }
-
+        # retourne une direction que la tete prendra
         return d[str(randint(0,3))]
