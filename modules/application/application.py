@@ -142,7 +142,7 @@ class Application():
     def Surface_Init(self) -> None:
 
         """
-        
+        Initialisation des surfaces de jeux, de menues et de scoreboard
         """
 
         # Menu part
@@ -159,7 +159,7 @@ class Application():
     def Surface_Init_Color(self) -> None:
 
         """
-        
+        Initialisation de la couleur des surfaces
         """
 
         # Menu Color 
@@ -176,7 +176,7 @@ class Application():
     def Upddate_Frame(self) -> None:
 
         """
-        
+        Mise à jour des surfaces
         """
 
         # Menu surface part
@@ -207,9 +207,9 @@ class Application():
     def __Game__(self) -> None:
 
         """
-        
+        Affichage des objects
         """
-        self.spawn()
+        self.initialisation()
 
         for obj in self.body_part:
 
@@ -219,10 +219,10 @@ class Application():
 
             obj.build_bloc(self.game_surface,(255,0,0))
 
-    def spawn(self) -> None:
+    def initialisation(self) -> None:
         
         """
-        Initialisation d'une nouvelle game
+        Initialisation de la position du serpent et de la pomme
         """
         #
         if self.game["first_object"] == True:
@@ -266,6 +266,10 @@ class Application():
         n2 = randint(min,max_2)
         
         return ((20 * n1) + n1 * 1 + 1), ((20 * n2) + n2 * 1 + 1)
+
+# ================================================================================================================================================= #
+#                                                                     Logique de jeu                                              
+# ================================================================================================================================================= #
     
     def move_snake(self) -> None:
 
@@ -345,7 +349,6 @@ class Application():
 
                 break
                 
-
     def direction(self) -> tuple[int,int]:
         
         """
@@ -360,3 +363,7 @@ class Application():
         }
         # retourne une direction que la tete prendra
         return d[str(randint(0,3))]
+
+# ================================================================================================================================================= #
+#                                                                     Surfaces                                            
+# ================================================================================================================================================= #
