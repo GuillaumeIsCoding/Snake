@@ -3,6 +3,23 @@ from modules.application.surfaces.surface_manager import SurfaceManager
 from modules.objects.object import Object
 
 
+# ================================================================================================================================================= #
+#                                                                     TextBox                                             
+# ================================================================================================================================================= #
+
+from modules.objects.text.upper_game.bodyCount import BodyCount
+from modules.objects.text.score.score import Score
+from modules.objects.text.score.time import Time
+from modules.objects.text.lower_game.apple import AppleEat
+from modules.objects.text.lower_game.difficulty import Difficulty
+from modules.objects.text.lower_game.heading_x import Heading_X
+from modules.objects.text.lower_game.heading_y import Heading_Y
+
+# ================================================================================================================================================= #
+#                                                                     Button                                             
+# ================================================================================================================================================= #
+
+
 from pygame import display,time, event, USEREVENT,KEYDOWN,K_w,K_a,K_d,K_s, K_SPACE,K_ESCAPE, Color
 from pygame_gui import UI_BUTTON_PRESSED
 from random import randint
@@ -15,10 +32,8 @@ class Application():
     #
     is_gui_running = True
     #
-    first_object = True
-    #
     gameplay = {
-        "heading_x"     :   -1,
+        "heading_x"     :    0,
         "heading_y"     :    0,
         "difficulty"    :    1,
         "score"         :    0, 
@@ -26,7 +41,7 @@ class Application():
     # 
     game ={
         "pause"             :   False,
-        "first_object"      :   True,
+        "new_game"          :   True,
         "is_gui_running"    :   True
     }
     #
@@ -53,6 +68,8 @@ class Application():
         self.Surface_Init()
         #
         self.Surface_Init_Color()
+        #
+        
     
     def __app__(self) -> None:
         
@@ -64,9 +81,10 @@ class Application():
             #
             self.dT = self.clock.tick_busy_loop(9)/1000.0          # pour difficulter changer le busy loop
                                                                    # self.gameplay["difficulty"]
+            self.TextBoxInitialisation()
             # Fill up the map 
             self.game_surface.fill(Color(255,255,255))
-            # Game here 
+            # Game here
             self.__Game__()
             # Event here 
             self.__Events__()
@@ -75,8 +93,7 @@ class Application():
             self.Upddate_Frame() 
                 # Update gui here - - -
             display.update()
-        #
-        print(self.gameplay)
+
     def __Events__(self) -> None:
         
         """
@@ -182,23 +199,45 @@ class Application():
         # Menu surface part
         self.menu_surface_manager.update(self.dT)
         self.applicationSurface.blit(self.menu_surface, (0,0))
-        self.menu_surface_manager.draw_ui(self.applicationSurface)
+        self.menu_surface_manager.draw_ui(self.menu_surface)
         # Game surface part
         self.game_surface_manager.update(self.dT)
         self.applicationSurface.blit(self.game_surface, ((self.width)/3 - (((self.width)/3)/20 + 1)/2, 140 - ((800/20)+1)/2))
-        self.game_surface_manager.draw_ui(self.applicationSurface)
         # Game upper part 
         self.upper_game_surface_manager.update(self.dT)
         self.applicationSurface.blit(self.upper_game_surface, ((self.width)/3 - (((self.width)/3)/20 + 1)/2,0))
-        self.upper_game_surface_manager.draw_ui(self.applicationSurface)
+        self.upper_game_surface_manager.draw_ui(self.upper_game_surface)
         # Game lower part
         self.lower_game_surface_manager.update(self.dT)
         self.applicationSurface.blit(self.lower_game_surface, ((self.width)/3 - (((self.width)/3)/20 + 1)/2,self.height - 140 + ((800/20)+1)/2))
-        self.lower_game_surface_manager.draw_ui(self.applicationSurface)
+        self.lower_game_surface_manager.draw_ui(self.lower_game_surface)
         # Score surface part
         self.score_surface_manager.update(self.dT)
         self.applicationSurface.blit(self.score_surface, ((2/3)*(self.width) + (((self.width)/3)/20 + 1)/2,0))
-        self.score_surface_manager.draw_ui(self.applicationSurface)
+        self.score_surface_manager.draw_ui(self.score_surface)
+    
+    def TextBoxInitialisation(self) -> None:
+
+        # Upper game surface 
+            # Affiche le nombre de case le serpent prend
+        self.bodyCount_text = BodyCount( self.upper_game_surface_manager, 200, 140 - ((800/20)+1)/2, (self.width/3 + (((self.width)/3)/20 + 1))/2 - 100, 0, len(self.body_part)).create_text()
+        # Lower game surface 
+            # direction axe des x du serpent
+        self.heading_x_text = Heading_X( self.lower_game_surface_manager, 200, (140 - ((800/20)+1)/2)/2, (self.width/3 + (((self.width)/3)/20 + 1))/5 - 150, 0, self.gameplay["heading_x"]).create_text()
+            # direction axe des y du serpent
+        self.heading_y_text = Heading_Y( self.lower_game_surface_manager, 200, (140 - ((800/20)+1)/2)/2, (self.width/3 + (((self.width)/3)/20 + 1))/5 - 150, (140 - ((800/20)+1)/2)/2, self.gameplay["heading_y"]).create_text()
+            # difficulté de la partie
+        self.difficulty_text = Difficulty( self.lower_game_surface_manager, 200, 140 - ((800/20)+1)/2, (self.width/3 + (((self.width)/3)/20 + 1)) - 200, 0, int(self.gameplay["difficulty"])).create_text()
+            # nombre de pommes que le serpent à mangé
+        self.appleat_text = AppleEat( self.lower_game_surface_manager, 250, 140 - ((800/20)+1)/2, (self.width/3 + (((self.width)/3)/20 + 1))/2 - 125, 0, int(self.gameplay["score"]/50)).create_text()
+        # Score surface
+            # score de la partie "live" 
+        self.score_text = Score( self.score_surface_manager, 200, 50, (self.width/3 - (((self.width)/3)/20 + 1)/2)/2 - 100, self.height/2 - 25, self.gameplay["score"]).create_text()
+        
+    
+    def ButtonInitialisation(self) -> None:
+
+        pass
     
     # ================================================================================================================================================= #
     #                                                                     Game                                              
@@ -225,9 +264,9 @@ class Application():
         Initialisation de la position du serpent et de la pomme
         """
         #
-        if self.game["first_object"] == True:
+        if self.game["new_game"] == True:
             #
-            self.game["first_object"] = False
+            self.game["new_game"] = False
             #
             ishead = True
             #
@@ -254,6 +293,8 @@ class Application():
             apple_x, apple_y = self.random_spawn(0,29,39)
 
             self.apple.append(Object(apple_x,apple_y,20,20))
+
+            self.bodyCount_text.text = "La taille du Snake: {}".format(str(len(self.body_part)))
 
 
     def random_spawn(self,min,max_1,max_2) -> tuple[int,int]:

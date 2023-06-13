@@ -1,4 +1,4 @@
-from pygame_gui.elements import UITextBox
+from pygame_gui.elements import UILabel
 from modules.objects.text.text import Text
 
 class Heading_X(Text):
@@ -9,6 +9,6 @@ class Heading_X(Text):
 
         self.txt = "Direction en X: {}".format(txt)
     
-    def create_text(self) -> UITextBox:
+    def create_text(self) -> UILabel:
         
         return super().create_text()

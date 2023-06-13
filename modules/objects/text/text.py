@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from pygame_gui.elements import UITextBox
+from pygame_gui.elements import UILabel
 from pygame import Rect
 
 class Text(ABC):
@@ -13,19 +13,19 @@ class Text(ABC):
         self.surface = surface
         self.width = width
         self.height = height
-        self.txt = txt
+        self.txt = str(txt)
         self.x = x_pos
         self.y = y_pos
 
     @abstractmethod
-    def create_text(self) -> UITextBox:
+    def create_text(self) -> UILabel:
 
         """
         Retourne un textbox creer et initialisé
         """
 
-        self.text = UITextBox(relative_rect=Rect((self.x,self.y),(self.height,self.width)),
-                              manager = self.surface,
-                              html_text= self.text)
-        return self.text
+        self.label = UILabel(relative_rect=Rect((self.x,self.y),(self.width,self.height)),
+                             manager = self.surface,
+                             text = self.txt)
+        return self.label
     

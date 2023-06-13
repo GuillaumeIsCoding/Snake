@@ -24,7 +24,7 @@ class Button(ABC):
         Retourne un bouton creer et initialisé
         """
 
-        btn = UIButton(relative_rect= Rect((self.x,self.y),(self.height,self.width)),
+        btn = UIButton(relative_rect= Rect((self.x,self.y),(self.width,self.height)),
                        manager = self.surface,
                        text = self.txt)
 

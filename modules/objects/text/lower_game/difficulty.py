@@ -1,4 +1,4 @@
-from pygame_gui.elements import UITextBox
+from pygame_gui.elements import UILabel
 from modules.objects.text.text import Text
 
 class Difficulty(Text):
@@ -9,6 +9,6 @@ class Difficulty(Text):
 
         self.txt = "La difficulté: {}".format(txt)
     
-    def create_text(self) -> UITextBox:
+    def create_text(self) -> UILabel:
         
         return super().create_text()
