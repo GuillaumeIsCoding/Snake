@@ -1,7 +1,10 @@
+# ================================================================================================================================================= #
+#                                                                     Window                                             
+# ================================================================================================================================================= #
+
 from modules.application.window.window_build import WindowBuild
 from modules.application.surfaces.surface_manager import SurfaceManager
 from modules.objects.object import Object
-
 
 # ================================================================================================================================================= #
 #                                                                     TextBox                                             
@@ -19,12 +22,28 @@ from modules.objects.text.lower_game.heading_y import Heading_Y
 #                                                                     Button                                             
 # ================================================================================================================================================= #
 
+from modules.objects.button.menu.mode import ModeButton
+from modules.objects.button.menu.play import PlayButton
+from modules.objects.button.menu.quit import QuitButton
+from modules.objects.button.menu.settings import SettingsButton
+
+# ================================================================================================================================================= #
+#                                                                     Pygame                                             
+# ================================================================================================================================================= #
 
 from pygame import display,time, event, USEREVENT,KEYDOWN,K_w,K_a,K_d,K_s, K_SPACE,K_ESCAPE, Color
 from pygame_gui import UI_BUTTON_PRESSED
-from random import randint
 
+# ================================================================================================================================================= #
+#                                                                     Default modules                                            
+# ================================================================================================================================================= #
+
+from random import randint
 import time as temps
+
+# ================================================================================================================================================= #
+#                                                                     Application                                            
+# ================================================================================================================================================= #
 
 class Application():
     #
@@ -40,9 +59,16 @@ class Application():
     }
     # 
     game ={
+        "is_game_started"   :   False,
         "pause"             :   False,
         "new_game"          :   True,
-        "is_gui_running"    :   True
+        "is_gui_running"    :   True,
+        "time"              :   0,
+    }
+    #
+    frame = {
+        "isGameFrame"       : True,
+        "isSettingsFrame"   : False
     }
     #
     body_part = []
@@ -69,25 +95,29 @@ class Application():
         #
         self.Surface_Init_Color()
         #
-        
+        self.ButtonInitialisation()
     
     def __app__(self) -> None:
         
         """
         
         """
-
+        
         while self.game["is_gui_running"] != False:
             #
             self.dT = self.clock.tick_busy_loop(9)/1000.0          # pour difficulter changer le busy loop
-                                                                   # self.gameplay["difficulty"]
+                                                                   # self.gameplay["difficulty"]                                                        
             self.TextBoxInitialisation()
             # Fill up the map 
             self.game_surface.fill(Color(255,255,255))
-            # Game here
-            self.__Game__()
             # Event here 
             self.__Events__()
+
+            # Game here
+            if self.game["is_game_started"] == True:
+                
+                self.__Game__()
+
             # Update here     
                 # Update frames here
             self.Upddate_Frame() 
@@ -100,16 +130,38 @@ class Application():
         
         """
 
-        self.colision_listener()
+        if self.game["is_game_started"] == True:
+            
+            self.colision_listener()
 
         for self.event in event.get():
         
             if self.event.type == USEREVENT:
-
+                
+                print(0)
+                
                 if self.event.user_type == UI_BUTTON_PRESSED:
-                    # 
-                    pass
+                    
+                    if self.frame["isGameFrame"] == True:
 
+                        # play button
+                        if (self.event.ui_element == self.playButton) and (self.game["is_game_started"] == False):
+                            # start une nouvelle game
+                            self.game["is_game_started"] = self.playButton_manager.event_handler()
+                            
+                        # mode button
+                        if self.event.ui_element == self.modeButton:
+                        
+                            print(2)
+                        # settings button
+                        if self.event.ui_element == self.settingsButton:
+
+                            print(3)
+                        # quit button
+                        if self.event.ui_element == self.quitButton:
+                            # pour quitter le jeu
+                            self.game["is_gui_running"] = False
+                            
             if self.event.type == KEYDOWN:
 
                 if self.game["pause"] == False:
@@ -142,10 +194,10 @@ class Application():
                         self.game["pause"] = False
 
                 if self.event.key == K_ESCAPE:
-                    # This function close the game when "Esc" key is pressed
+                    # This function open settings tabs
                     self.game["is_gui_running"] = False
             
-        if self.game["pause"]   == False:
+        if (self.game["pause"] == False) and (self.game["is_game_started"] == True) and (self.game["new_game"] == False):
             #
             self.move_snake()        
                 
@@ -220,7 +272,7 @@ class Application():
 
         # Upper game surface 
             # Affiche le nombre de case le serpent prend
-        self.bodyCount_text = BodyCount( self.upper_game_surface_manager, 200, 140 - ((800/20)+1)/2, (self.width/3 + (((self.width)/3)/20 + 1))/2 - 100, 0, len(self.body_part)).create_text()
+        self.bodyCount_text = BodyCount( self.upper_game_surface_manager, 300, 140 - ((800/20)+1)/2, (self.width/3 + (((self.width)/3)/20 + 1))/2 - 150, 0, len(self.body_part)).create_text()
         # Lower game surface 
             # direction axe des x du serpent
         self.heading_x_text = Heading_X( self.lower_game_surface_manager, 200, (140 - ((800/20)+1)/2)/2, (self.width/3 + (((self.width)/3)/20 + 1))/5 - 150, 0, self.gameplay["heading_x"]).create_text()
@@ -232,12 +284,31 @@ class Application():
         self.appleat_text = AppleEat( self.lower_game_surface_manager, 250, 140 - ((800/20)+1)/2, (self.width/3 + (((self.width)/3)/20 + 1))/2 - 125, 0, int(self.gameplay["score"]/50)).create_text()
         # Score surface
             # score de la partie "live" 
-        self.score_text = Score( self.score_surface_manager, 200, 50, (self.width/3 - (((self.width)/3)/20 + 1)/2)/2 - 100, self.height/2 - 25, self.gameplay["score"]).create_text()
+        self.score_text = Score( self.score_surface_manager, 200, 80, (self.width/3 - (((self.width)/3)/20 + 1)/2)/2 - 100, self.height/2 - 40, self.gameplay["score"]).create_text()
         
     
     def ButtonInitialisation(self) -> None:
+        
+        # Button manager
+        self.playButton_manager = PlayButton( self.menu_surface_manager, 100, 50,(self.width/3 - (((self.width)/3)/20 + 1)/2)/2 - 50, self.height/5 - 25, "Play")
+        # Button
+        self.playButton = self.playButton_manager.create_button()
 
-        pass
+        # Button manager
+        self.modeButton_manager = ModeButton( self.menu_surface_manager, 100, 50, (self.width/3 - (((self.width)/3)/20 + 1)/2)/2 - 50,2 * self.height/5 - 25, "Mode")
+        # Button
+        self.modeButton = self.modeButton_manager.create_button()
+
+        # Button manager 
+        self.settingsButton_manager = SettingsButton( self.menu_surface_manager, 100, 50, (self.width/3 - (((self.width)/3)/20 + 1)/2)/2 - 50,3 * self.height/5 - 25, "Settings")
+        # Button
+        self.settingsButton = self.settingsButton_manager.create_button()
+
+        # Button manager 
+        self.quitButton_manager = QuitButton( self.menu_surface_manager, 100, 50, (self.width/3 - (((self.width)/3)/20 + 1)/2)/2 - 50,4 * self.height/5 - 25, "Quit")
+        # Button
+        self.quitButton = self.quitButton_manager.create_button()
+
     
     # ================================================================================================================================================= #
     #                                                                     Game                                              
@@ -376,17 +447,15 @@ class Application():
         # lorsque la tete du serpent touche les bords du jeu
         if (self.body_part[0].x <= 0) or (self.body_part[0].x >= (self.width)/3 + (((self.width)/3)/20 + 1)) or (self.body_part[0].y <= 0) or (self.body_part[0].y >= 800 + ((800/20)+1)):
             
-            self.game["is_gui_running"] = False
+            self.end()
 
-            print("GAME OVER")
         # analysons laposition de chaque partie du corps du serpent
         for indice in range(1,len(self.body_part)):
             # lorsque la tete du serpent touche son corps
             if (self.body_part[0].x >= self.body_part[indice].x and self.body_part[0].x  <= self.body_part[indice].x + 20) and (self.body_part[0].y >= self.body_part[indice].y and self.body_part[0].y <= self.body_part[indice].y + 20):
                 
-                self.game["is_gui_running"] = False
+                self.end()
 
-                print("GAME OVER")
 
                 break
                 
@@ -404,6 +473,21 @@ class Application():
         }
         # retourne une direction que la tete prendra
         return d[str(randint(0,3))]
+    
+    def end(self) -> None:
+
+        """
+        Réinitialisation du jeu pour une nouvelle partie
+        """
+
+        self.body_part = []
+        self.apple = []
+
+        self.game["is_game_started"] = False
+        self.game["new_game"] = True
+        
+        self.gameplay["difficulty"] = 1
+        self.gameplay["score"] = 0
 
 # ================================================================================================================================================= #
 #                                                                     Surfaces                                            
