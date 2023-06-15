@@ -11,12 +11,12 @@ from modules.objects.object import Object
 # ================================================================================================================================================= #
 
 from modules.objects.text.upper_game.bodyCount import BodyCount
-from modules.objects.text.score.score import Score
+from modules.objects.text.score.Score import Score
 from modules.objects.text.score.time import Time
 from modules.objects.text.lower_game.apple import AppleEat
 from modules.objects.text.lower_game.difficulty import Difficulty
 from modules.objects.text.lower_game.heading_x import Heading_X
-from modules.objects.text.lower_game.heading_y import Heading_Y
+from modules.objects.text.lower_game.heading_y import Heading_Y 
 
 # ================================================================================================================================================= #
 #                                                                     Button                                             
@@ -120,8 +120,15 @@ class Application():
 
             # Update here     
                 # Update frames here
-            self.Upddate_Frame() 
-                # Update gui here - - -
+            if self.frame["isGameFrame"] == True:
+                # Update game frame here
+                self.Upddate_Game_Frame() 
+            
+            elif self.frame["isSettingsFrame"] == True:
+                # Update Settings frame here
+                self.Update_Settings_Frame() 
+
+            # Update gui here - - -
             display.update()
 
     def __Events__(self) -> None:
@@ -135,11 +142,11 @@ class Application():
             self.colision_listener()
 
         for self.event in event.get():
-        
+            
+            # lorsqu'un bouton est survolé
             if self.event.type == USEREVENT:
                 
-                print(0)
-                
+                # lorsqu'un bouton est cliqué
                 if self.event.user_type == UI_BUTTON_PRESSED:
                     
                     if self.frame["isGameFrame"] == True:
@@ -155,13 +162,17 @@ class Application():
                             print(2)
                         # settings button
                         if self.event.ui_element == self.settingsButton:
+                            
+                            # ouvre la fenetre des settings
+                            self.frame["isGameFrame"] = False
 
-                            print(3)
+                            self.frame["isSettingsFrame"] = True
                         # quit button
                         if self.event.ui_element == self.quitButton:
                             # pour quitter le jeu
                             self.game["is_gui_running"] = False
-                            
+            
+            # lorsqu'une touche est cliquée                
             if self.event.type == KEYDOWN:
 
                 if self.game["pause"] == False:
@@ -182,7 +193,7 @@ class Application():
                         # 
                         self.gameplay["heading_x"], self.gameplay["heading_y"] = 1, 0
 
-                if self.event.key == K_SPACE:
+                if (self.event.key == K_SPACE) and (self.game["is_game_started"] == True) and (self.game["new_game"] == False) and (self.frame["isGameFrame"] == True):
                     # lorsque la touche est cliqué met la partie sur pause 
                     
                     if self.game["pause"] == False:
@@ -193,16 +204,52 @@ class Application():
 
                         self.game["pause"] = False
 
-                if self.event.key == K_ESCAPE:
-                    # This function open settings tabs
-                    self.game["is_gui_running"] = False
+                if self.event.key == K_ESCAPE :
+                    # Ouvre la fenetre des settings
+                    
+                    # option 1 -> ouvre la fenetre
+                    if self.frame["isGameFrame"] == True:
+                        
+                        self.frame["isGameFrame"] = False
+                        
+                        self.frame["isSettingsFrame"] = True
+                    
+                    # option 2-> ferme la fenetre
+                    elif self.frame["isGameFrame"] == False:
+                        
+                        self.frame["isGameFrame"] = True
+                        
+                        self.frame["isSettingsFrame"] = False
             
-        if (self.game["pause"] == False) and (self.game["is_game_started"] == True) and (self.game["new_game"] == False):
+            # les événement sont procédés
+            if self.frame["isGameFrame"] == True:
+                
+                self.process_game_events()
+            
+            elif self.frame["isSettingsFrame"] == True:
+                
+                self.process_settings_events()
+
+        if (self.game["pause"] == False) and (self.game["is_game_started"] == True) and (self.game["new_game"] == False) and (self.frame["isGameFrame"] == True):
             #
             self.move_snake()        
                 
-            
-            
+    def process_game_events(self) -> None:
+
+        """
+        Les événements sont procédés ici lorsque le game frame est True
+        """  
+        self.menu_surface_manager.process_events(self.event)
+        self.upper_game_surface_manager.process_events(self.event)  
+        self.lower_game_surface_manager.process_events(self.event)
+        self.score_surface_manager.process_events(self.event)    
+
+    def process_settings_events(self) -> None:
+
+        """
+        Les événements sont procédés ici lorsque le settings frame est True
+        """
+        self.settings_surface_manager.process_events(self.event)        
     
     # ================================================================================================================================================= #
     #                                                                     Frames                                              
@@ -224,7 +271,9 @@ class Application():
         self.lower_game_surface, self.lower_game_surface_manager = SurfaceManager(self.width/3 + (((self.width)/3)/20 + 1), 140 - ((800/20)+1)/2, "game_lower_surface").build_surface_manager()
         # Score part
         self.score_surface, self.score_surface_manager = SurfaceManager(self.width/3 - (((self.width)/3)/20 + 1)/2, self.height, "score_surface").build_surface_manager()
-    
+        # Settings part
+        self.settings_surface, self.settings_surface_manager = SurfaceManager(self.width, self.height, "settings_surface").build_surface_manager()
+
     def Surface_Init_Color(self) -> None:
 
         """
@@ -241,11 +290,13 @@ class Application():
         self.lower_game_surface.fill(Color(0,0,0))
         # Score Color
         self.score_surface.fill(Color(0,0,0))
+        # Settings Color
+        self.settings_surface.fill(Color(0,0,0))
     
-    def Upddate_Frame(self) -> None:
+    def Upddate_Game_Frame(self) -> None:
 
         """
-        Mise à jour des surfaces
+        Mise à jour des surfaces de la game frame
         """
 
         # Menu surface part
@@ -267,6 +318,18 @@ class Application():
         self.score_surface_manager.update(self.dT)
         self.applicationSurface.blit(self.score_surface, ((2/3)*(self.width) + (((self.width)/3)/20 + 1)/2,0))
         self.score_surface_manager.draw_ui(self.score_surface)
+    
+    def Update_Settings_Frame(self) -> None:
+
+        """
+        Mise à jour des surfaces de la settings frame
+        """
+
+        # Settings surface part
+        self.settings_surface_manager.update(self.dT)
+        self.applicationSurface.blit(self.settings_surface, (0,0))
+        self.settings_surface_manager.draw_ui(self.settings_surface)
+
     
     def TextBoxInitialisation(self) -> None:
 

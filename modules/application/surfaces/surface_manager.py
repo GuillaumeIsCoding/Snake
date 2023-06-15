@@ -18,7 +18,8 @@ class SurfaceManager(MasterSurfaceManager):
             "menu_surface"          : "modules/application/surfaces/surfaces_configuration/menu.json",
             "score_surface"         : "modules/application/surfaces/surfaces_configuration/score.json",
             "game_upper_surface"    : "modules/application/surfaces/surfaces_configuration/upper_game.json",
-            "game_lower_surface"    : "modules/application/surfaces/surfaces_configuration/lower_game.json"
+            "game_lower_surface"    : "modules/application/surfaces/surfaces_configuration/lower_game.json",
+            "settings_surface"      : "modules/application/surfaces/surfaces_configuration/settings.json"
         }
 
         return Surface((self.width,self.height)), UIManager((self.width,self.height), theme_picker[self.key])           
