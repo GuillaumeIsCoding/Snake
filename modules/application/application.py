@@ -11,7 +11,7 @@ from modules.objects.object import Object
 # ================================================================================================================================================= #
 
 from modules.objects.text.upper_game.bodyCount import BodyCount
-from modules.objects.text.score.Score import Score
+from modules.objects.text.score.score import Score
 from modules.objects.text.score.time import Time
 from modules.objects.text.lower_game.apple import AppleEat
 from modules.objects.text.lower_game.difficulty import Difficulty
